@@ -38,6 +38,30 @@ class Transcript:
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_upgrade_keeps_existing_options_and_adds_new_entities(self):
+        old = options()
+        for key in ('inverter', 'tuv_soc', 'tesla_soc', 'tesla_power', 'wallbox_mode'):
+            old.pop('entity_' + key)
+        old.update(entity_pv='sensor.original_pv', entity_tuv_top='sensor.old_tuv',
+                   battery_positive='charging', display_password='synthetic-lock')
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'options.json'
+            path.write_text(json.dumps(old), encoding='utf-8')
+            migrated = load_options(path)
+            self.assertEqual(migrated['entity_pv'], 'sensor.original_pv')
+            self.assertEqual(migrated['display_password'], 'synthetic-lock')
+            self.assertEqual(migrated['battery_positive'], 'charging')
+            self.assertEqual(migrated['entity_wallbox_mode'], 'select.rezim_nabijeni')
+            self.assertEqual(migrated['entity_inverter'], 'sensor.vystupni_vykon')
+            state = State(migrated)
+            poll_once(state, 'http://localhost', 'synthetic', fetch=lambda *_: [
+                {'entity_id': 'select.rezim_nabijeni', 'state': 'Solar', 'attributes': {}}])
+            self.assertEqual(state.snapshot['values']['wallbox_mode']['state'], 'Solar')
+            migrated['entity_wallbox_mode'] = 'sensor.wrong_domain'
+            path.write_text(json.dumps(migrated), encoding='utf-8')
+            with self.assertRaises(ValueError):
+                load_options(path)
+
     def test_manifest_default_options_match_runtime_validation(self):
         self.assertEqual(options()['display_interval'], 60)
         bad = options()

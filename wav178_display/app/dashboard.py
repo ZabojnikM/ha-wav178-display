@@ -63,6 +63,36 @@ def battery_flow(state, positive):
     return ('NABÍJENÍ BATERIE', 'charging') if charging else ('VYBÍJENÍ BATERIE', 'discharging')
 
 
+def percent(state):
+    value = numeric(state, 'soc')
+    return '—' if value is None else f'{value:.0f} %'
+
+
+def kilowatts(state, signed=False):
+    value = numeric(state, 'power')
+    if value is None:
+        return '—'
+    text = f'{value / 1000:+.2f}' if signed else f'{value / 1000:.2f}'
+    return text.replace('.', ',').replace('-', '−') + ' kW'
+
+
+def battery_power(state, positive):
+    value = numeric(state, 'power')
+    if value is None:
+        return '—'
+    if positive == 'discharging':
+        value = -value
+    # With unknown polarity retain the raw sign; do not infer charging direction.
+    return kilowatts({'state': value, 'unit': 'W'}, signed=True)
+
+
+def mode_text(state):
+    value = state.get('state') if isinstance(state, dict) else None
+    if not isinstance(value, str) or value.strip() in ('', 'unknown', 'unavailable'):
+        return '—'
+    return ' '.join(value.split())
+
+
 def render(snapshot, config=None, now=None):
     config = config or {}
     now = now or datetime.now(timezone.utc)
@@ -84,45 +114,46 @@ def render(snapshot, config=None, now=None):
     status = 'UKÁZKOVÁ DATA' if demo else ('STARÁ DATA' if stale else 'HOME ASSISTANT')
     draw.text((395, 7), status, anchor='ra', font=font(12, True), fill=1)
 
-    def card(box, label):
-        draw.rounded_rectangle(box, radius=7, outline=0, width=1)
-        draw.text((box[0] + 9, box[1] + 6), label, font=font(12, True), fill=0)
+    def card(x, y, label):
+        # All six cards: 188 x 72 pixels, 7-pixel gaps in both directions.
+        draw.rounded_rectangle((x, y, x + 187, y + 71), radius=7, outline=0, width=1)
+        draw.text((x + 9, y + 6), label, font=font(12, True), fill=0)
 
-    card((7, 37, 194, 108), 'PANELY')
-    draw.text((17, 61), power(values.get('pv')), font=font(28, True), fill=0)
-    card((202, 37, 392, 108), 'BATERIE FVE / SOC')
-    soc = numeric(values.get('soc'), 'soc')
-    draw.text((212, 58), '—' if soc is None else f'{soc:.0f} %', font=font(29, True), fill=0)
-    draw.rectangle((327, 64, 379, 89), outline=0, width=2)
-    draw.rectangle((380, 71, 383, 82), fill=0)
-    if soc is not None and soc > 0:
-        draw.rectangle((330, 67, 330 + int(46 * soc / 100), 86), fill=0)
+    def single(x, y, text, size=25):
+        while size > 14 and draw.textlength(text, font=font(size, True)) > 168:
+            size -= 1
+        draw.text((x + 10, y + 24), text, font=font(size, True), fill=0)
 
-    battery_state = values.get('battery')
-    battery_label, flow = battery_flow(battery_state, config.get('battery_positive'))
-    card((7, 116, 194, 186), battery_label)
-    display_state = battery_state
-    if flow is not None:
-        display_state = {'state': abs(numeric(battery_state, 'power')), 'unit': 'W'}
-    draw.text((17, 140), power(display_state, signed=flow is None), font=font(25, True), fill=0)
-    if flow in ('charging', 'discharging'):
-        draw.rectangle((163, 148, 184, 164), outline=0, width=2)
-        draw.rectangle((185, 153, 187, 159), fill=0)
-        draw.line((142, 156, 159, 156), fill=0, width=2)
-        arrow_x = 159 if flow == 'charging' else 142
-        tail_x = arrow_x - 5 if flow == 'charging' else arrow_x + 5
-        draw.line((tail_x, 151, arrow_x, 156, tail_x, 161), fill=0, width=2)
-    card((202, 116, 392, 186), 'SÍŤ')
-    draw.text((212, 140), power(values.get('grid'), signed=True), font=font(25, True), fill=0)
+    def pair(x, y, left, right):
+        left_size, right_size = 23, 18
+        while (draw.textlength(left, font=font(left_size, True)) +
+               draw.textlength(right, font=font(right_size, True)) > 158):
+            if left_size > right_size:
+                left_size -= 1
+            elif right_size > 12:
+                right_size -= 1
+            else:
+                break
+        draw.text((x + 10, y + 24), left, font=font(left_size, True), fill=0)
+        draw.text((x + 177, y + 28), right, anchor='ra', font=font(right_size, True), fill=0)
 
-    card((7, 194, 249, 270), 'TEPLÁ VODA / HORNÍ · SPODNÍ')
-    def temp(key):
-        value = numeric(values.get(key), 'temperature')
-        return '—' if value is None else f'{value:.0f}°'
-    draw.text((17, 217), temp('tuv_top') + ' / ' + temp('tuv_bottom'), font=font(25, True), fill=0)
-    draw.text((17, 248), 'Ohřev: ' + power(values.get('tuv_power')), font=font(12), fill=0)
-    card((257, 194, 392, 270), 'WALLBOX')
-    draw.text((267, 222), power(values.get('wallbox')), font=font(19, True), fill=0)
+    card(7, 37, 'PANELY')
+    single(7, 37, power(values.get('pv')), 28)
+    card(202, 37, 'BATERIE')
+    pair(202, 37, percent(values.get('soc')),
+         battery_power(values.get('battery'), config.get('battery_positive')))
+    card(7, 116, 'MĚNIČE')
+    single(7, 116, kilowatts(values.get('inverter')))
+    card(202, 116, 'SÍŤ')
+    single(202, 116, power(values.get('grid'), signed=True))
+    card(7, 195, 'TUV')
+    single(7, 195, percent(values.get('tuv_soc')), 28)
+    card(202, 195, 'TESLA')
+    pair(202, 195, percent(values.get('tesla_soc')), kilowatts(values.get('tesla_power')))
+    mode = 'Režim: ' + mode_text(values.get('wallbox_mode'))
+    while draw.textlength(mode, font=font(11)) > 168:
+        mode = mode[:-2].rstrip() + '…'
+    draw.text((212, 249), mode, font=font(11), fill=0)
 
     if demo:
         footer = 'Náhled rozvržení • hodnoty jsou vzorové'
@@ -142,8 +173,9 @@ def demo_snapshot():
         return {'state': str(value), 'unit': unit}
     return {'demo': True, 'fetched_at': datetime.now(timezone.utc).isoformat(), 'values': {
         'soc': state(76, '%'), 'pv': state(4.82, 'kW'), 'battery': state(-620, 'W'),
-        'grid': state(120, 'W'), 'tuv_top': state(57, '°C'),
-        'tuv_bottom': state(43, '°C'), 'tuv_power': state(1800, 'W'), 'wallbox': state(0, 'W')}}
+        'grid': state(3790, 'W'), 'inverter': state(4290, 'W'),
+        'tuv_soc': state(75, '%'), 'tesla_soc': state(64, '%'),
+        'tesla_power': state(7.4, 'kW'), 'wallbox_mode': state('Přebytky', None)}}
 
 
 if __name__ == '__main__':

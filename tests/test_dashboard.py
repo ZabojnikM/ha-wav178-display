@@ -1,8 +1,22 @@
 import unittest
-from dashboard import battery_flow, demo_snapshot, numeric, power, render
+from dashboard import (battery_flow, battery_power, demo_snapshot, kilowatts,
+                       mode_text, numeric, percent, power, render)
 
 
 class DashboardTests(unittest.TestCase):
+    def test_combined_battery_and_tesla_values(self):
+        self.assertEqual(battery_power({'state': '530', 'unit': 'W'}, 'charging'), '+0,53 kW')
+        self.assertEqual(battery_power({'state': '-530', 'unit': 'W'}, 'charging'), '−0,53 kW')
+        self.assertEqual(battery_power({'state': '530', 'unit': 'W'}, 'discharging'), '−0,53 kW')
+        self.assertEqual(kilowatts({'state': '7.4', 'unit': 'kW'}), '7,40 kW')
+        self.assertEqual(percent({'state': '75', 'unit': '%'}), '75 %')
+        self.assertEqual(percent({'state': '75', 'unit': '°C'}), '—')
+        self.assertEqual(mode_text({'state': 'unavailable'}), '—')
+        self.assertEqual(mode_text({'state': 'Solar\n mode'}), 'Solar mode')
+        snapshot = demo_snapshot()
+        snapshot['values']['wallbox_mode']['state'] = 'Velmi dlouhý režim ' * 20
+        self.assertEqual(render(snapshot).size, (400, 300))
+
     def test_confirmed_positive_battery_means_charging(self):
         self.assertEqual(battery_flow({'state': '500', 'unit': 'W'}, 'charging')[1], 'charging')
         self.assertEqual(battery_flow({'state': '-500', 'unit': 'W'}, 'charging')[1], 'discharging')

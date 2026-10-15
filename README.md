@@ -4,9 +4,10 @@ Python doplněk pro Waveshare 4,2″ e-Paper Cloud Module, 400×300, s originál
 firmwarem. Čte Home Assistant a posílá černobílý dashboard přes TCP 6868.
 Po instalaci běží na zařízení s Home Assistant OS a nevyžaduje zapnutý Windows PC.
 
-Zobrazuje SOC baterie FVE, výkon panelů, baterie a sítě, horní/spodní teplotu TUV,
-hodnotu entity výkonu TUV a výkon wallboxu. Znaménko baterie je nastavitelné;
-síť se zatím zobrazuje s původním znaménkem. Žádné řídicí služby HA nevolá.
+Zobrazuje šest stejně velkých okýnek: PANELY, BATERIE (SOC a výkon), MĚNIČE,
+SÍŤ, TUV (odhad nabití) a TESLA (SOC, výkon nabíjení a režim wallboxu).
+Výkon baterie v kW má po nastavení polarity znaménko + pro nabíjení a − pro
+vybíjení; síť zobrazuje původní znaménko. Žádné řídicí služby HA nevolá.
 
 ## Instalace přes GitHub
 

@@ -26,9 +26,30 @@ implementace používá pouze GET a žádné povely pro FVE, TUV nebo wallbox ne
 | entity_pv | Výkon panelů ve W/kW |
 | entity_battery | Výkon baterie ve W/kW |
 | entity_grid | Síť ve W/kW, původní znaménko |
-| entity_tuv_top / entity_tuv_bottom | Horní a spodní teplota TUV v °C |
-| entity_tuv_power | Vybraná hodnota výkonu TUV ve W/kW |
-| entity_wallbox | Výkon wallboxu ve W/kW |
+| entity_inverter | Výstupní výkon měničů ve W/kW; zobrazen v kW |
+| entity_tuv_soc | Odhad nabití zásoby TUV v % |
+| entity_tesla_soc | Nabití baterie Tesly v % |
+| entity_tesla_power | Výkon nabíjení Tesly ve W/kW; zobrazen v kW |
+| entity_wallbox_mode | Stav entity `select` s aktuálním režimem wallboxu |
+| entity_tuv_top / entity_tuv_bottom / entity_tuv_power / entity_wallbox | Staré položky 0.1.x; zachované kvůli kompatibilitě, od 0.2.0 se nečtou |
+
+### Aktualizace z 0.1.x na 0.2.0
+
+Stávající mapování panelů, baterie a sítě, intervaly i heslo displeje se zachovají.
+Nové položky se doplní takto; v případě potřeby je upravte v nastavení:
+
+```yaml
+entity_inverter: sensor.vystupni_vykon
+entity_tuv_soc: sensor.tuv_300_l_odhad_zasoby_odhad_nabiti_tuv
+entity_tesla_soc: sensor.uroven_baterie
+entity_tesla_power: sensor.vykon_nabijecky
+entity_wallbox_mode: select.rezim_nabijeni
+```
+
+Pro kladný výkon nabíjející FVE baterii nastavte `battery_positive: charging`.
+V BATERII se pak zobrazí např. `76 %` a `−0,53 kW` při vybíjení. V TESLE je
+pod SOC a výkonem řádek „Režim: …“. Dlouhý režim se zkrátí výpustkou.
+Položka `select` se pouze čte; doplněk ji nemění.
 
 Jednotky a dostupnost se ověřují. `unknown`, `unavailable`, NaN, chybějící
 entita a nesprávná jednotka se nikdy nezmění na nulu. Stáří samotného nezměněného

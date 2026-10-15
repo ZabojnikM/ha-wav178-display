@@ -16,10 +16,19 @@ jedné relace, validace konfigurace, náhled HTTP, chybějící hodnoty a jednot
 polarita baterie, zachování posledních dat při výpadku API a obnova po výpadku.
 Testy používají syntetická data a localhost. Osobní token ani živý HA nepotřebují.
 
-Na tomto Windows PC není Docker. Sestavení/spuštění Linux kontejneru ani aarch64
-proto zatím nebylo provedeno. Připravená CI je ověří před vydáním stable.
-Instalace doplňku, přístup přes interní SUPERVISOR_TOKEN, Ingress v reálném HA
-a převzetí displeje na HA hostiteli čekají na fyzický instalační test.
+Verze 0.1.1 prošla nativním sestavením a kontejnerovým testem na amd64 i
+aarch64 (GitHub Actions 38793123246). Na skutečném HA se spustila, načetla
+všechna tehdejší mapování a displej potvrdil dva automatické přenosy na jednom
+spojení. Ingress náhled byl funkční. To nenahrazuje měření výdrže baterie.
 
-Příkaz ke zopakování testů je v README. Kontejnerový smoke test navíc kontroluje
-autentizaci proti syntetickému HA, náhled PNG, dva přenosy a výpadek API.
+## Rozložení 0.2.0
+
+Lokálně prošlo 12 testů včetně migrace nastavení z 0.1.x, validace entity
+select, převodů W/kW, znamének baterie a chybějících hodnot. Vizuálně byl
+zkontrolován samostatný vzorový obraz 400×300 se šesti stejnými kartami a
+režimem Tesly. Kontejnerové testy amd64/aarch64 jsou povinnou součástí
+vydávacího workflow před přesunem do stable. Nové fyzické rozložení otestuje
+uživatel po aktualizaci; tato verze se během přípravy na jeho HA neinstaluje.
+
+Kontejnerový smoke test ověřuje autentizaci syntetického HA, náhled PNG,
+dva TCP přenosy bez Shutdown a zachování dat při výpadku API.

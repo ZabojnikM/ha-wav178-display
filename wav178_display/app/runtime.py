@@ -17,7 +17,16 @@ from ha_probe import get_json
 from protocol import Wire
 
 LOG = logging.getLogger('wav178')
-KEYS = ('soc', 'pv', 'battery', 'grid', 'tuv_top', 'tuv_bottom', 'tuv_power', 'wallbox')
+KEYS = ('soc', 'pv', 'battery', 'grid', 'inverter', 'tuv_soc',
+        'tesla_soc', 'tesla_power', 'wallbox_mode')
+# Add new fields for upgrades from 0.1.x; preserve existing and explicitly empty mappings.
+NEW_ENTITIES = {
+    'inverter': 'sensor.vystupni_vykon',
+    'tuv_soc': 'sensor.tuv_300_l_odhad_zasoby_odhad_nabiti_tuv',
+    'tesla_soc': 'sensor.uroven_baterie',
+    'tesla_power': 'sensor.vykon_nabijecky',
+    'wallbox_mode': 'select.rezim_nabijeni',
+}
 
 
 def load_options(path):
@@ -40,8 +49,9 @@ def load_options(path):
     if options['device_ip']:
         ipaddress.IPv4Address(options['device_ip'])
     for key in KEYS:
-        entity = options.setdefault('entity_' + key, '')
-        if not isinstance(entity, str) or (entity and not re.fullmatch(r'sensor\.[a-z0-9_]+', entity)):
+        entity = options.setdefault('entity_' + key, NEW_ENTITIES.get(key, ''))
+        domain = 'select' if key == 'wallbox_mode' else 'sensor'
+        if not isinstance(entity, str) or (entity and not re.fullmatch(domain + r'\.[a-z0-9_]+', entity)):
             raise ValueError(f'Neplatná entita {key}.')
     return options
 

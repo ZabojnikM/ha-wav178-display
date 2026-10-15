@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0
+
+- Šest stejně velkých okýnek 188 × 72 px v mřížce 2 × 3.
+- PANELY zachovány, BATERIE spojuje SOC a podepsaný výkon v kW bez ikonky.
+- MĚNIČE místo vybíjení baterie; SÍŤ zachovává původní znaménko a formát.
+- TUV zobrazuje odhad nabití v procentech místo teplot a výkonu ohřevu.
+- TESLA zobrazuje SOC, výkon nabíjení v kW a aktuální režim wallboxu.
+- Nová mapování entit se doplní při aktualizaci z 0.1.x; stávající nastavení se zachová.
+- Režim wallboxu se pouze čte, žádné řízení nabíjení se neposílá.
+
 ## 0.1.1
 
 - Přímé spuštění Pythonu se zachováním prostředí od Supervisoru, bez zděděného s6.
