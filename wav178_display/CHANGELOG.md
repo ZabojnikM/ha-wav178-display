@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- Finální grafický návrh 2: šest stejně velkých polí s otevřenými dělicími linkami.
+- Větší čísla v písmu DejaVu Sans Condensed, samostatné jednotky a ikony všech polí.
+- Segmentové ukazatele nabití FVE baterie, TUV a Tesly; nedostupný stav má pomlčku.
+- Režim wallboxu vpravo dole pod Teslou, čas načtení vlevo dole.
+- Odstraněny nadpisy FVE / DOMOV a HOME ASSISTANT; všechna měření zůstávají.
+- Zachováno upozornění na stará data, mapování entit i TCP protokol.
+- Ošetřeny dlouhé režimy a velké hodnoty, bez překrývání sousedních polí.
+
 ## 0.2.0
 
 - Šest stejně velkých okýnek 188 × 72 px v mřížce 2 × 3.

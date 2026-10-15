@@ -47,8 +47,11 @@ entity_wallbox_mode: select.rezim_nabijeni
 ```
 
 Pro kladný výkon nabíjející FVE baterii nastavte `battery_positive: charging`.
-V BATERII se pak zobrazí např. `76 %` a `−0,53 kW` při vybíjení. V TESLE je
-pod SOC a výkonem řádek „Režim: …“. Dlouhý režim se zkrátí výpustkou.
+V BATERII se pak zobrazí např. `76 %` a `−0,53 kW` při vybíjení. Od verze 0.3.0 je režim wallboxu vpravo dole pod Teslou; čas načtení vlevo
+dole. Dlouhý režim se zkrátí výpustkou. Baterie FVE, TUV i Tesla mají segmentový
+ukazatel nabití. Při nedostupném nabití se místo prázdného ukazatele zobrazí
+pomlčka, aby stav nebyl zaměněn za skutečných 0 %. Při chybě či zastarání API
+se u času objeví STARÁ DATA. Při aktualizaci z 0.2.0 není nutná změna mapování.
 Položka `select` se pouze čte; doplněk ji nemění.
 
 Jednotky a dostupnost se ověřují. `unknown`, `unavailable`, NaN, chybějící

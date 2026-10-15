@@ -32,3 +32,12 @@ uživatel po aktualizaci; tato verze se během přípravy na jeho HA neinstaluje
 
 Kontejnerový smoke test ověřuje autentizaci syntetického HA, náhled PNG,
 dva TCP přenosy bez Shutdown a zachování dat při výpadku API.
+
+## Rozložení 0.3.0
+
+Lokálně prošlo 14 testů. Navíc se ověřuje rozdíl mezi chybějícím, nulovým a
+plným ukazatelem nabití, dostupnost úzkého písma, omezení dlouhého režimu a
+zachování označení starých dat i při velkých hodnotách. Vizuálně je zkontrolován
+obraz 400×300 s ukázkovými hodnotami i bez dostupných senzorů. Kontejnerový
+test ověřuje přítomnost písma také uvnitř Alpine image. Fyzické otestování
+nového vzhledu provede uživatel po vlastní instalaci.

@@ -55,6 +55,9 @@ def main(image):
                                '-v', f'{path}:/data/options.json:ro',
                                '-p', '127.0.0.1::6868', '-p', '127.0.0.1::8099', image)
             try:
+                docker('exec', container, 'python3', '-c',
+                       "from dashboard import condensed_font; "
+                       "assert 'Condensed' in ' '.join(condensed_font(22).getname())")
                 tcp_port = int(docker('port', container, '6868/tcp').rsplit(':', 1)[-1])
                 http_port = int(docker('port', container, '8099/tcp').rsplit(':', 1)[-1])
                 base = f'http://127.0.0.1:{http_port}'

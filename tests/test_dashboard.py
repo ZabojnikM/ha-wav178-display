@@ -1,9 +1,39 @@
 import unittest
+from datetime import datetime, timezone
+from PIL import Image, ImageDraw
 from dashboard import (battery_flow, battery_power, demo_snapshot, kilowatts,
-                       mode_text, numeric, percent, power, render)
+                       condensed_font, draw_gauge, fit_text, mode_text, numeric,
+                       percent, power, render)
 
 
 class DashboardTests(unittest.TestCase):
+    def test_charge_gauge_distinguishes_missing_empty_and_full(self):
+        images = []
+        for state in (None, {'state': '0', 'unit': '%'}, {'state': '100', 'unit': '%'}):
+            im = Image.new('1', (180, 4), 1)
+            draw_gauge(ImageDraw.Draw(im), 0, 0, state)
+            images.append(im.tobytes())
+        self.assertEqual(len(set(images)), 3)
+
+    def test_footer_and_extreme_values_fit_without_hiding_stale_status(self):
+        face = condensed_font(22)
+        self.assertIn('Condensed', ' '.join(face.getname()))
+        im = Image.new('1', (400, 300), 1)
+        draw = ImageDraw.Draw(im)
+        text = fit_text(draw, 'Velmi dlouhý režim wallboxu ' * 20, face, 178)
+        self.assertLessEqual(draw.textlength(text, font=face), 178)
+        snap = demo_snapshot()
+        snap.pop('demo')
+        snap['fetched_at'] = '2026-01-01T00:00:00+00:00'
+        snap['values']['soc'] = {'state': '100', 'unit': '%'}
+        snap['values']['battery'] = {'state': '-99999999', 'unit': 'W'}
+        snap['values']['wallbox_mode']['state'] = 'Dlouhý režim ' * 30
+        stale = render(snap, now=datetime(2026, 1, 2, tzinfo=timezone.utc))
+        snap['fetched_at'] = '2026-01-02T00:00:00+00:00'
+        fresh = render(snap, now=datetime(2026, 1, 2, tzinfo=timezone.utc))
+        self.assertNotEqual(stale.crop((10, 279, 190, 299)).tobytes(),
+                            fresh.crop((10, 279, 190, 299)).tobytes())
+
     def test_combined_battery_and_tesla_values(self):
         self.assertEqual(battery_power({'state': '530', 'unit': 'W'}, 'charging'), '+0,53 kW')
         self.assertEqual(battery_power({'state': '-530', 'unit': 'W'}, 'charging'), '−0,53 kW')
