@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Přímé spuštění Pythonu se zachováním prostředí od Supervisoru, bez zděděného s6.
+- Standardní Docker init pro ukončení procesu; interní token se nezadává ručně.
+- Kontejnerový test používá stejný Docker init jako instalace v Home Assistantu.
+
 ## 0.1.0
 
 - První samostatný Python doplněk Home Assistantu pro Waveshare 4,2″ Cloud Module.

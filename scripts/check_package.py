@@ -17,7 +17,8 @@ def validate():
     assert set(config['options']) == set(config['schema'])
     assert 'image' not in config, 'This version builds from repository during installation.'
     assert b'\r' not in (ROOT / 'wav178_display/run.sh').read_bytes()
-    assert (ROOT / 'wav178_display/run.sh').read_text().startswith('#!/usr/bin/with-contenv sh\n')
+    assert (ROOT / 'wav178_display/run.sh').read_text().startswith('#!/bin/sh\n')
+    assert config['init'] is True
     tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
     assert any(tracked), 'No tracked files to validate.'
     for name in filter(None, tracked):

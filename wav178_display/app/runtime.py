@@ -186,7 +186,8 @@ def main():
     options = load_options(os.environ.get('WAV178_OPTIONS', '/data/options.json'))
     token = os.environ.get('SUPERVISOR_TOKEN') or os.environ.get('WAV178_API_TOKEN')
     if not token:
-        raise RuntimeError('Chybí interní přístup HA; ověřte homeassistant_api: true.')
+        raise RuntimeError('Python neobdržel SUPERVISOR_TOKEN. Aktualizujte doplněk; '
+                           'homeassistant_api je již povoleno v manifestu.')
     base = os.environ.get('WAV178_API_URL', 'http://supervisor/core')
     state, stop = State(options), threading.Event()
     def terminate(_signum, _frame):

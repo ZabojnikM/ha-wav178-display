@@ -49,7 +49,7 @@ def main(image):
         path.write_text(json.dumps(options))
         with ThreadingHTTPServer(('0.0.0.0', 0), FakeHA) as ha:
             threading.Thread(target=ha.serve_forever, daemon=True).start()
-            container = docker('run', '-d', '--add-host=host.docker.internal:host-gateway',
+            container = docker('run', '-d', '--init', '--add-host=host.docker.internal:host-gateway',
                                '-e', 'SUPERVISOR_TOKEN=synthetic-smoke-token',
                                '-e', f'WAV178_API_URL=http://host.docker.internal:{ha.server_port}',
                                '-v', f'{path}:/data/options.json:ro',
