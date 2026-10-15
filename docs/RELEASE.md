@@ -13,8 +13,8 @@ Existující tag nelze tímto postupem přepsat. Potom vznikne veřejné GitHub 
 První verze nepoužívá GHCR: Home Assistant z Dockerfile sestaví stejný zdroj
 při instalaci. Nevzniká problém s přístupem k privátním vrstvám registru.
 Základní obraz a balíčky OS se při sestavení stahují z oficiálních zdrojů.
-Pin základního obrazu na ověřený digest je vhodný před dlouhodobým provozem;
-v první verzi se používá dokumentovaný latest obraz Home Assistantu.
+Základní obraz Home Assistantu je připnutý na digest získaný při ověření
+sestavení amd64/aarch64, aby se pod stejnou verzí samovolně neměnil.
 
 Na veřejný GitHub patří jen explicitně zkontrolované zdroje. deployment.local.json,
 options.local.json, PROJECT_BRIEF.local.md, snapshoty, exporty senzorů, logy,
