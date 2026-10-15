@@ -1,0 +1,45 @@
+name: Release verified app
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version matching wav178_display/config.json
+        required: true
+        default: '0.1.0'
+permissions:
+  contents: read
+concurrency:
+  group: release-wav178
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate version and source branch
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          test "$GITHUB_REF" = refs/heads/main
+          python -c 'import json,os,re; v=os.environ["VERSION"]; assert re.fullmatch(r"\d+\.\d+\.\d+",v); assert json.load(open("wav178_display/config.json"))["version"]==v'
+  verify:
+    needs: validate
+    uses: ./.github/workflows/check.yml
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish verified commit to stable and tag
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$GITHUB_REF" = refs/heads/main
+          git tag "v$VERSION" "$GITHUB_SHA"
+          git push --atomic origin "$GITHUB_SHA:refs/heads/stable" "refs/tags/v$VERSION"
+          gh release create "v$VERSION" --title "WAV178 FVE Display $VERSION" --notes-file wav178_display/CHANGELOG.md

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+work/
+outputs/
+*.local.*
+logs/
+.env
+ha-snapshot*
+ha-entities*
+dashboard-live.png
