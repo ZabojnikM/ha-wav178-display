@@ -87,3 +87,19 @@ Při chybě zkontrolujte logy doplňku a webový náhled. `HTTPError` u API mů�
 znamenat problém oprávnění; `PermissionError` relace displeje zamčený přístroj.
 Při chybě přenosu se relace uzavře a server čeká na nové připojení. Podpora OTA
 nebo obnovení původního firmware není součástí projektu.
+
+## Vzhled od 0.4.0
+
+Karty mají rozložení 3 × 2: PANELY / MĚNIČE / TUV a SÍŤ / BATERIE / TESLA.
+Spojnice mezi řadami tvoří pouze vizuální společnou sběrnici. Nezobrazují
+skutečné zapojení ani ověřený směr toku energie.
+
+Silné segmentové ukazatele výkonu panelů, měničů a sítě používají rozsah
+0–8 kW. U sítě se délka odvozuje z absolutní hodnoty; znaménko zůstává u čísla.
+Při překročení 8 kW je bar plný, číselná hodnota se neomezuje. Ukazatele nabití
+baterie, TUV a Tesly mají rozsah 0–100 %. Chybějící hodnoty mají místo baru
+pomlčku, takže se nepletou s potvrzenou nulou.
+
+Režim wallboxu je velkým písmem vpravo dole; dlouhý název se nejprve zmenší,
+případně zkrátí. Vlevo zůstává čas a upozornění na stará data. Aktualizace
+z 0.2.0 nebo 0.3.0 nepotřebuje změnu mapování senzorů.

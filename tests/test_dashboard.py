@@ -2,15 +2,31 @@ import unittest
 from datetime import datetime, timezone
 from PIL import Image, ImageDraw
 from dashboard import (battery_flow, battery_power, demo_snapshot, kilowatts,
-                       condensed_font, draw_gauge, fit_text, mode_text, numeric,
+                       condensed_font, draw_gauge, gauge_level, fit_text, mode_text, numeric,
                        percent, power, render)
 
 
 class DashboardTests(unittest.TestCase):
+    def test_power_gauge_uses_eight_kw_magnitude_and_saturates(self):
+        for value, unit, expected in ((0, 'W', 0), (4000, 'W', 50),
+                                      (-4, 'kW', 50), (8, 'kW', 100), (12000, 'W', 100)):
+            self.assertEqual(gauge_level({'state': value, 'unit': unit}, 'power'), expected)
+        self.assertIsNone(gauge_level({'state': 'unavailable', 'unit': 'W'}, 'power'))
+        self.assertIsNone(gauge_level({'state': 4, 'unit': 'kWh'}, 'power'))
+        images = []
+        for state in (None, {'state': 0, 'unit': 'W'}, {'state': 8, 'unit': 'kW'},
+                      {'state': 12, 'unit': 'kW'}):
+            im = Image.new('1', (96, 8), 1)
+            draw_gauge(ImageDraw.Draw(im), 0, 0, state, 'power')
+            images.append(im.tobytes())
+        self.assertNotEqual(images[0], images[1])
+        self.assertNotEqual(images[1], images[2])
+        self.assertEqual(images[2], images[3])
+
     def test_charge_gauge_distinguishes_missing_empty_and_full(self):
         images = []
         for state in (None, {'state': '0', 'unit': '%'}, {'state': '100', 'unit': '%'}):
-            im = Image.new('1', (180, 4), 1)
+            im = Image.new('1', (96, 8), 1)
             draw_gauge(ImageDraw.Draw(im), 0, 0, state)
             images.append(im.tobytes())
         self.assertEqual(len(set(images)), 3)

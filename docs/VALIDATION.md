@@ -41,3 +41,12 @@ zachování označení starých dat i při velkých hodnotách. Vizuálně je zk
 obraz 400×300 s ukázkovými hodnotami i bez dostupných senzorů. Kontejnerový
 test ověřuje přítomnost písma také uvnitř Alpine image. Fyzické otestování
 nového vzhledu provede uživatel po vlastní instalaci.
+
+## Rozložení 0.4.0
+
+Lokálně prošlo 15 testů. Nová kontrola ověřuje výkonovou stupnici 0–8 kW,
+převody W/kW, stejnou délku pro kladný i záporný výkon, plný bar nad 8 kW a
+odlišení chybějící hodnoty od nuly. Vizuálně byl ověřen běžný obraz, nedostupné
+senzory a velké hodnoty s dlouhým režimem a starými daty. Před vydáním do
+stable zůstávají povinné nativní kontejnerové testy amd64/aarch64. Instalaci
+a fyzické ověření nového vzhledu provede uživatel.

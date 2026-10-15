@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0
+
+- Schválené rozložení inspirované Victron: šest stejných karet 116 × 116 px.
+- Neutrální společná sběrnice mezi řadami, bez šipek směru energie.
+- Silné segmentové bary u všech šesti karet.
+- Panely, měniče a síť mají pevnou stupnici 0–8 kW; síť používá velikost výkonu.
+- Nabití baterie, TUV a Tesly zůstává v procentech 0–100 %.
+- Výrazně zvětšený režim wallboxu vpravo dole, čas načtení vlevo.
+- Zachováno mapování entit, upozornění na stará data a provoz TCP bez Shutdown.
+- Hodnoty nad 8 kW vyplní celý bar; číselný údaj zůstává skutečný, včetně znaménka.
+
 ## 0.3.0
 
 - Finální grafický návrh 2: šest stejně velkých polí s otevřenými dělicími linkami.

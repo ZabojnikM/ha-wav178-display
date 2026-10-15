@@ -133,18 +133,29 @@ def draw_icon(draw, kind, x, y, soc=None):
         draw.rectangle((a+13,b+10,a+15,b+12),fill=0)
 
 
-def draw_gauge(draw, x, y, state):
-    pct = numeric(state, 'soc')
-    if pct is None:
-        # Missing charge must look different from a confirmed empty battery.
-        draw.line((x + 85, y + 1, x + 91, y + 1), fill=0)
+def gauge_level(state, kind='soc'):
+    value = numeric(state, kind)
+    if value is None:
+        return None
+    # Power is normalized from W; export/import share the magnitude scale.
+    if kind == 'power':
+        value = abs(value) / 8000 * 100
+    return max(0, min(100, value))
+
+
+def draw_gauge(draw, x, y, state, kind='soc'):
+    level = gauge_level(state, kind)
+    if level is None:
+        draw.line((x + 45, y + 3, x + 51, y + 3), fill=0)
         return
     for i in range(20):
-        start = x + i * 9
-        draw.rectangle((start, y, start + 6, y + 3), outline=0)
-        filled = max(0, min(7, round(pct / 100 * 140 - i * 7)))
+        left = x + round(i * 96 / 20)
+        right = x + round((i + 1) * 96 / 20) - 2
+        draw.rectangle((left, y, right, y + 7), outline=0)
+        fraction = max(0, min(1, level / 5 - i))
+        filled = round((right - left + 1) * fraction)
         if filled:
-            draw.rectangle((start, y, start + filled - 1, y + 3), fill=0)
+            draw.rectangle((left, y, left + filled - 1, y + 7), fill=0)
 
 
 def fit_text(draw, text, face, width):
@@ -171,69 +182,58 @@ def render(snapshot, config=None, now=None):
         except (ValueError, TypeError):
             fetched = None
     stale = snapshot.get('error') or age is None or age > config.get('stale_after_seconds', 180)
-    draw.line((200, 13, 200, 272), fill=0)
-    for y in (94, 183):
-        draw.line((10, y, 190, y), fill=0)
-        draw.line((210, y, 389, y), fill=0)
+    # Six equal 116x116 cards, linked by a neutral shared bus.
+    draw.line((66, 142, 336, 142), fill=0)
+    for center in (66, 201, 336):
+        draw.line((center, 131, center, 153), fill=0)
+        draw.ellipse((center - 2, 140, center + 2, 144), fill=1, outline=0)
 
-    def label(x, y, title, kind):
-        draw.rectangle((x, y + 3, x + 2, y + 10), fill=0)
-        draw.text((x + 9, y), title, font=font(10, True), fill=0)
-        draw_icon(draw, kind, x, y, numeric(values.get('soc'), 'soc'))
+    def card(x, y, title, kind):
+        draw.rounded_rectangle((x, y, x + 115, y + 115), radius=5, fill=1, outline=0)
+        draw.line((x + 1, y + 27, x + 114, y + 27), fill=0)
+        draw.text((x + 8, y + 8), title, font=font(10, True), fill=0)
+        draw_icon(draw, kind, x - 66, y + 7, numeric(values.get('soc'), 'soc'))
 
-    def single(x, y, text, size=34):
-        parts = text.rsplit(' ', 1)
-        number, unit = parts if len(parts) == 2 else (text, '')
-        number = number.replace('.', ',').replace('-', '−')
-        unit_width = draw.textlength(unit, font=font(12)) + (5 if unit else 0)
-        while size > 12 and draw.textlength(number, font=condensed_font(size)) + unit_width > 179:
+    def fitted(text, size, width):
+        while size > 10 and draw.textlength(text, font=condensed_font(size)) > width:
             size -= 1
         face = condensed_font(size)
-        number = fit_text(draw, number, face, 179 - unit_width)
-        draw.text((x, y + 55), number, font=face, fill=0, anchor='ls')
-        end = x + draw.textlength(number, font=face)
-        if unit:
-            draw.text((end + 5, y + 54), unit, font=font(12), fill=0, anchor='ls')
+        return fit_text(draw, text, face, width), face
 
-    def paired(x, y, soc_state, power_text):
-        soc = numeric(soc_state, 'soc')
-        left, left_unit = ('—', '') if soc is None else (f'{soc:.0f}', '%')
-        right = power_text.removesuffix(' kW')
-        left_size, right_size = 31, 22
-        def total_width():
-            return (draw.textlength(left, font=condensed_font(left_size)) +
-                    draw.textlength(left_unit, font=font(11)) +
-                    draw.textlength(right, font=condensed_font(right_size)) + 12)
-        while total_width() > 177 and right_size > 12:
-            right_size -= 1
-            left_size -= 1
-        face = condensed_font(left_size)
-        draw.text((x, y + 51), left, font=face, fill=0, anchor='ls')
-        end = x + draw.textlength(left, font=face)
-        draw.text((end + 2, y + 50), left_unit, font=font(11), fill=0, anchor='ls')
-        max_right = 177 - (end - x) - draw.textlength(left_unit, font=font(11)) - 12
-        right = fit_text(draw, right, condensed_font(right_size), max_right)
-        draw.text((x + 177, y + 48), right, font=condensed_font(right_size), fill=0, anchor='rs')
-        if power_text != '—':
-            draw.text((x + 177, y + 59), 'kW', font=font(8), fill=0, anchor='rs')
+    def centered(x, baseline, text, size=24):
+        text, face = fitted(text, size, 103)
+        draw.text((x + 58, baseline), text, font=face, fill=0, anchor='ms')
 
-    label(10, 13, 'PANELY', 'solar')
-    single(10, 13, power(values.get('pv')))
-    label(211, 13, 'BATERIE', 'battery')
-    paired(211, 13, values.get('soc'), battery_power(values.get('battery'), config.get('battery_positive')))
-    draw_gauge(draw, 211, 85, values.get('soc'))
-    label(10, 102, 'MĚNIČE', 'wave')
-    single(10, 102, kilowatts(values.get('inverter')))
-    label(211, 102, 'SÍŤ', 'grid')
-    single(211, 102, power(values.get('grid'), signed=True), 31)
-    label(10, 191, 'TUV', 'water')
-    single(10, 191, percent(values.get('tuv_soc')))
-    draw_gauge(draw, 10, 263, values.get('tuv_soc'))
-    label(211, 191, 'TESLA', 'car')
-    paired(211, 191, values.get('tesla_soc'), kilowatts(values.get('tesla_power')))
-    draw_gauge(draw, 211, 263, values.get('tesla_soc'))
+    def note(x, y, text):
+        draw.text((x + 58, y + 85), text, font=font(8), fill=0, anchor='ms')
 
-    draw.line((10, 277, 389, 277), fill=0)
+    def power_card(x, y, title, kind, state, caption, signed=False):
+        card(x, y, title, kind)
+        centered(x, y + 67, kilowatts(state, signed=signed), 22 if signed else 24)
+        note(x, y, caption)
+        draw.text((x + 10, y + 98), '0', font=font(7), fill=0, anchor='ls')
+        draw.text((x + 106, y + 98), '8 kW', font=font(7), fill=0, anchor='rs')
+        draw_gauge(draw, x + 10, y + 101, state, 'power')
+
+    def charge_card(x, y, title, kind, state, power_text=None):
+        card(x, y, title, kind)
+        centered(x, y + 63, percent(state), 29)
+        if power_text is not None:
+            centered(x, y + 86, power_text, 17)
+        else:
+            note(x, y, 'NABITÍ ZÁSOBY')
+        draw_gauge(draw, x + 10, y + 101, state)
+
+    power_card(8, 16, 'PANELY', 'solar', values.get('pv'), 'VÝKON PANELŮ')
+    power_card(143, 16, 'MĚNIČE', 'wave', values.get('inverter'), 'VÝSTUPNÍ VÝKON')
+    charge_card(278, 16, 'TUV', 'water', values.get('tuv_soc'))
+    power_card(8, 153, 'SÍŤ', 'grid', values.get('grid'), 'VÝKON SÍTĚ', signed=True)
+    charge_card(143, 153, 'BATERIE', 'battery', values.get('soc'),
+                battery_power(values.get('battery'), config.get('battery_positive')))
+    charge_card(278, 153, 'TESLA', 'car', values.get('tesla_soc'),
+                kilowatts(values.get('tesla_power')))
+
+    draw.line((8, 274, 393, 274), fill=0)
     if demo:
         footer = 'Ukázková data'
     elif fetched:
@@ -241,11 +241,11 @@ def render(snapshot, config=None, now=None):
         footer = ('STARÁ DATA ' if stale else 'Načteno ') + local.strftime('%H:%M:%S')
     else:
         footer = 'Čekám na data'
-    draw.text((10, 282), fit_text(draw, footer, font(9, bool(stale)), 178),
-              font=font(9, bool(stale)), fill=0)
-    mode = 'Wallbox: ' + mode_text(values.get('wallbox_mode'))
-    draw.text((389, 282), fit_text(draw, mode, font(10, True), 178),
-              font=font(10, True), anchor='ra', fill=0)
+    draw.text((8, 293), fit_text(draw, footer, font(9, bool(stale)), 150),
+              font=font(9, bool(stale)), fill=0, anchor='ls')
+    draw.text((166, 293), 'WALLBOX', font=font(10, True), fill=0, anchor='ls')
+    mode, face = fitted(mode_text(values.get('wallbox_mode')), 22, 168)
+    draw.text((393, 294), mode, font=face, fill=0, anchor='rs')
     return image
 
 
