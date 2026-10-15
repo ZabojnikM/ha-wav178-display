@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0
+
+- Větší číslice a malé samostatné jednotky kW a % podle schváleného návrhu.
+- Odstraněny malé vysvětlující popisky; názvy karet a ikony zůstávají.
+- Jednoduché rámečkové bary se souvislou výplní namísto segmentů.
+- Skryté popisky stupnice 0 a 8 kW; výkonová stupnice zůstává 0–8 kW.
+- Kladné hodnoty se zobrazují bez plusu, záporné si zachovávají mínus.
+- TUV má stejnou velikost číslic a svislé zarovnání jako panely a měniče.
+- Zachováno mapování entit, velký režim wallboxu a upozornění na stará data.
+
 ## 0.4.0
 
 - Schválené rozložení inspirované Victron: šest stejných karet 116 × 116 px.

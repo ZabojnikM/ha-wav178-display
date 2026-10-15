@@ -50,3 +50,12 @@ odlišení chybějící hodnoty od nuly. Vizuálně byl ověřen běžný obraz,
 senzory a velké hodnoty s dlouhým režimem a starými daty. Před vydáním do
 stable zůstávají povinné nativní kontejnerové testy amd64/aarch64. Instalaci
 a fyzické ověření nového vzhledu provede uživatel.
+
+## Rozložení 0.5.0
+
+Stejných 15 testů prošlo po změně na souvislé bary a větší číslice. Kontroly
+stále rozlišují chybějící, nulovou a plnou hodnotu, ověřují 8kW stupnici,
+překročení rozsahu i stará data. Vizuálně ověřen běžný obraz 400×300 a krajní
+stav s velkými čísly, záporným výkonem sítě a dlouhým režimem wallboxu.
+Před stable vydáním zůstávají povinné kontejnerové zkoušky na amd64/aarch64.
+Instalaci provede uživatel.

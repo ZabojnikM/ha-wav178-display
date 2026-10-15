@@ -103,3 +103,12 @@ pomlčku, takže se nepletou s potvrzenou nulou.
 Režim wallboxu je velkým písmem vpravo dole; dlouhý název se nejprve zmenší,
 případně zkrátí. Vlevo zůstává čas a upozornění na stará data. Aktualizace
 z 0.2.0 nebo 0.3.0 nepotřebuje změnu mapování senzorů.
+
+## Zjednodušení vzhledu od 0.5.0
+
+Hodnoty mají velké číslice a malé jednotky; pomocné popisky uvnitř karet a
+popisky krajů výkonové stupnice se nezobrazují. Kladná hodnota nemá plus,
+záporná zachovává mínus. TUV je vycentrováno jako panely a měniče.
+Bary mají jednoduchý rámeček a souvislou výplň. Rozsah zůstává 0–8 kW pro
+panely, měniče a velikost výkonu sítě, 0–100 % pro nabití baterie/TUV/Tesly.
+Mapování entit, význam hodnot a další nastavení není potřeba měnit.

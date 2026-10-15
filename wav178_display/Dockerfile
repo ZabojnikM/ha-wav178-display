@@ -2,7 +2,7 @@ FROM ghcr.io/home-assistant/base:latest@sha256:8fde4170393bdf7a121ea4d6e34b417e1
 
 RUN apk add --no-cache python3 py3-pillow font-dejavu tzdata
 
-ARG BUILD_VERSION=0.4.0
+ARG BUILD_VERSION=0.5.0
 ARG BUILD_ARCH
 LABEL io.hass.version="${BUILD_VERSION}" \
       io.hass.type="app" \

@@ -148,14 +148,10 @@ def draw_gauge(draw, x, y, state, kind='soc'):
     if level is None:
         draw.line((x + 45, y + 3, x + 51, y + 3), fill=0)
         return
-    for i in range(20):
-        left = x + round(i * 96 / 20)
-        right = x + round((i + 1) * 96 / 20) - 2
-        draw.rectangle((left, y, right, y + 7), outline=0)
-        fraction = max(0, min(1, level / 5 - i))
-        filled = round((right - left + 1) * fraction)
-        if filled:
-            draw.rectangle((left, y, left + filled - 1, y + 7), fill=0)
+    draw.rectangle((x, y, x + 95, y + 7), outline=0)
+    filled = round(92 * level / 100)
+    if filled:
+        draw.rectangle((x + 2, y + 2, x + 1 + filled, y + 5), fill=0)
 
 
 def fit_text(draw, text, face, width):
@@ -200,34 +196,43 @@ def render(snapshot, config=None, now=None):
         face = condensed_font(size)
         return fit_text(draw, text, face, width), face
 
-    def centered(x, baseline, text, size=24):
-        text, face = fitted(text, size, 103)
-        draw.text((x + 58, baseline), text, font=face, fill=0, anchor='ms')
+    def metric(x, baseline, text, size=34, unit_size=11):
+        # Keep the sign of negative values; positive values need no leading plus.
+        text = text.removeprefix('+')
+        parts = text.rsplit(' ', 1)
+        number, unit = parts if len(parts) == 2 else (text, '')
+        unit_face = font(unit_size)
+        unit_width = draw.textlength(unit, font=unit_face)
+        gap = 5 if unit else 0
+        while size > 12 and draw.textlength(number, font=condensed_font(size)) + gap + unit_width > 103:
+            size -= 1
+        face = condensed_font(size)
+        number = fit_text(draw, number, face, 103 - gap - unit_width)
+        number_width = draw.textlength(number, font=face)
+        left = x + 58 - (number_width + gap + unit_width) / 2
+        draw.text((left, baseline), number, font=face, fill=0, anchor='ls')
+        if unit:
+            draw.text((left + number_width + gap, baseline - 1), unit,
+                      font=unit_face, fill=0, anchor='ls')
 
-    def note(x, y, text):
-        draw.text((x + 58, y + 85), text, font=font(8), fill=0, anchor='ms')
-
-    def power_card(x, y, title, kind, state, caption, signed=False):
+    def power_card(x, y, title, kind, state, signed=False):
         card(x, y, title, kind)
-        centered(x, y + 67, kilowatts(state, signed=signed), 22 if signed else 24)
-        note(x, y, caption)
-        draw.text((x + 10, y + 98), '0', font=font(7), fill=0, anchor='ls')
-        draw.text((x + 106, y + 98), '8 kW', font=font(7), fill=0, anchor='rs')
+        metric(x, y + 77, kilowatts(state, signed=signed), 32 if signed else 34)
         draw_gauge(draw, x + 10, y + 101, state, 'power')
 
     def charge_card(x, y, title, kind, state, power_text=None):
         card(x, y, title, kind)
-        centered(x, y + 63, percent(state), 29)
-        if power_text is not None:
-            centered(x, y + 86, power_text, 17)
+        if power_text is None:
+            metric(x, y + 77, percent(state), 34, 11)
         else:
-            note(x, y, 'NABITÍ ZÁSOBY')
+            metric(x, y + 65, percent(state), 38, 12)
+            metric(x, y + 88, power_text, 22, 9)
         draw_gauge(draw, x + 10, y + 101, state)
 
-    power_card(8, 16, 'PANELY', 'solar', values.get('pv'), 'VÝKON PANELŮ')
-    power_card(143, 16, 'MĚNIČE', 'wave', values.get('inverter'), 'VÝSTUPNÍ VÝKON')
+    power_card(8, 16, 'PANELY', 'solar', values.get('pv'))
+    power_card(143, 16, 'MĚNIČE', 'wave', values.get('inverter'))
     charge_card(278, 16, 'TUV', 'water', values.get('tuv_soc'))
-    power_card(8, 153, 'SÍŤ', 'grid', values.get('grid'), 'VÝKON SÍTĚ', signed=True)
+    power_card(8, 153, 'SÍŤ', 'grid', values.get('grid'), signed=True)
     charge_card(143, 153, 'BATERIE', 'battery', values.get('soc'),
                 battery_power(values.get('battery'), config.get('battery_positive')))
     charge_card(278, 153, 'TESLA', 'car', values.get('tesla_soc'),
