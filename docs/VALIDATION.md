@@ -59,3 +59,11 @@ překročení rozsahu i stará data. Vizuálně ověřen běžný obraz 400×300
 stav s velkými čísly, záporným výkonem sítě a dlouhým režimem wallboxu.
 Před stable vydáním zůstávají povinné kontejnerové zkoušky na amd64/aarch64.
 Instalaci provede uživatel.
+
+## Výkon TUV v 0.6.0
+
+Lokálně prošlo 16 testů včetně obnovení prázdného/chybějícího starého mapování
+entity_tuv_power, zachování vlastního mapování a čtení hodnoty ve W přes stejný
+polling jako ostatní senzory. Vizuálně ověřeno shodné dvouřádkové zobrazení
+TUV, baterie a Tesly. Před vydáním stable se ověřují nativní kontejnery pro
+amd64/aarch64. Instalaci a fyzické ověření provede uživatel.

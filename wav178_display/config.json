@@ -1,6 +1,6 @@
 {
   "name": "WAV178 FVE Display",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "slug": "wav178_display",
   "description": "Python server a FVE dashboard pro Waveshare 4,2″ Cloud Module s originálním firmwarem",
   "arch": [
@@ -35,7 +35,7 @@
     "entity_grid": "",
     "entity_tuv_top": "",
     "entity_tuv_bottom": "",
-    "entity_tuv_power": "",
+    "entity_tuv_power": "sensor.vykon_tuv",
     "entity_wallbox": "",
     "entity_inverter": "sensor.vystupni_vykon",
     "entity_tuv_soc": "sensor.tuv_300_l_odhad_zasoby_odhad_nabiti_tuv",

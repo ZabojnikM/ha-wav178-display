@@ -18,9 +18,10 @@ from protocol import Wire
 
 LOG = logging.getLogger('wav178')
 KEYS = ('soc', 'pv', 'battery', 'grid', 'inverter', 'tuv_soc',
-        'tesla_soc', 'tesla_power', 'wallbox_mode')
+        'tesla_soc', 'tesla_power', 'wallbox_mode', 'tuv_power')
 # Add new fields for upgrades from 0.1.x; preserve existing and explicitly empty mappings.
 NEW_ENTITIES = {
+    'tuv_power': 'sensor.vykon_tuv',
     'inverter': 'sensor.vystupni_vykon',
     'tuv_soc': 'sensor.tuv_300_l_odhad_zasoby_odhad_nabiti_tuv',
     'tesla_soc': 'sensor.uroven_baterie',
@@ -48,6 +49,9 @@ def load_options(path):
     options.setdefault('device_ip', '')
     if options['device_ip']:
         ipaddress.IPv4Address(options['device_ip'])
+    # 0.1–0.5 retained this unused legacy field, often as an empty string.
+    if options.get('entity_tuv_power') == '':
+        options['entity_tuv_power'] = NEW_ENTITIES['tuv_power']
     for key in KEYS:
         entity = options.setdefault('entity_' + key, NEW_ENTITIES.get(key, ''))
         domain = 'select' if key == 'wallbox_mode' else 'sensor'

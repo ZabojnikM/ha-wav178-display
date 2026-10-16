@@ -231,7 +231,8 @@ def render(snapshot, config=None, now=None):
 
     power_card(8, 16, 'PANELY', 'solar', values.get('pv'))
     power_card(143, 16, 'MĚNIČE', 'wave', values.get('inverter'))
-    charge_card(278, 16, 'TUV', 'water', values.get('tuv_soc'))
+    charge_card(278, 16, 'TUV', 'water', values.get('tuv_soc'),
+                kilowatts(values.get('tuv_power')))
     power_card(8, 153, 'SÍŤ', 'grid', values.get('grid'), signed=True)
     charge_card(143, 153, 'BATERIE', 'battery', values.get('soc'),
                 battery_power(values.get('battery'), config.get('battery_positive')))
@@ -260,7 +261,7 @@ def demo_snapshot():
     return {'demo': True, 'fetched_at': datetime.now(timezone.utc).isoformat(), 'values': {
         'soc': state(76, '%'), 'pv': state(4.82, 'kW'), 'battery': state(-620, 'W'),
         'grid': state(3790, 'W'), 'inverter': state(4290, 'W'),
-        'tuv_soc': state(75, '%'), 'tesla_soc': state(64, '%'),
+        'tuv_soc': state(75, '%'), 'tuv_power': state(1800, 'W'), 'tesla_soc': state(64, '%'),
         'tesla_power': state(7.4, 'kW'), 'wallbox_mode': state('Přebytky', None)}}
 
 

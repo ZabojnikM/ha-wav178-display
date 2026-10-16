@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+- TUV zobrazuje pod procenty výkon v kW, stejně jako BATERIE a TESLA.
+- Čtení senzoru sensor.vykon_tuv přes existující položku entity_tuv_power.
+- Při aktualizaci se prázdná nebo chybějící starší položka automaticky doplní;
+  vlastní neprázdné mapování se zachová.
+- Procentový bar TUV zůstává ukazatelem nabití zásoby, nikoli výkonu ohřevu.
+
 ## 0.5.0
 
 - Větší číslice a malé samostatné jednotky kW a % podle schváleného návrhu.

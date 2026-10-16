@@ -31,7 +31,8 @@ implementace používá pouze GET a žádné povely pro FVE, TUV nebo wallbox ne
 | entity_tesla_soc | Nabití baterie Tesly v % |
 | entity_tesla_power | Výkon nabíjení Tesly ve W/kW; zobrazen v kW |
 | entity_wallbox_mode | Stav entity `select` s aktuálním režimem wallboxu |
-| entity_tuv_top / entity_tuv_bottom / entity_tuv_power / entity_wallbox | Staré položky 0.1.x; zachované kvůli kompatibilitě, od 0.2.0 se nečtou |
+| entity_tuv_power | Od 0.6.0 výkon TUV ve W/kW, výchozí sensor.vykon_tuv |
+| entity_tuv_top / entity_tuv_bottom / entity_wallbox | Staré položky 0.1.x; zachované kvůli kompatibilitě, od 0.2.0 se nečtou |
 
 ### Aktualizace z 0.1.x na 0.2.0
 
@@ -112,3 +113,13 @@ záporná zachovává mínus. TUV je vycentrováno jako panely a měniče.
 Bary mají jednoduchý rámeček a souvislou výplň. Rozsah zůstává 0–8 kW pro
 panely, měniče a velikost výkonu sítě, 0–100 % pro nabití baterie/TUV/Tesly.
 Mapování entit, význam hodnot a další nastavení není potřeba měnit.
+
+## Výkon TUV od 0.6.0
+
+TUV má stejné zobrazení jako baterie a Tesla: nahoře procenta nabití zásoby,
+pod nimi výkon s malou jednotkou kW. Bar stále ukazuje procenta nabití.
+`entity_tuv_power` se od této verze opět čte. Výchozí entita je `sensor.vykon_tuv`;
+přijímá W nebo kW a zobrazuje kW. Chybějící či neplatná hodnota má pomlčku.
+Prázdná/chybějící stará položka se při načtení doplní na tuto entitu, vlastní
+neprázdné mapování zůstane zachované. Ostatní staré teplotní položky se nečtou.
+Jde o hodnotu zvoleného senzoru; doplněk neověřuje způsob jejího měření.

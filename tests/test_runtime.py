@@ -62,6 +62,26 @@ class RuntimeTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load_options(path)
 
+    def test_upgrade_restores_empty_legacy_tuv_power_and_reads_watts(self):
+        old = options()
+        old['entity_tuv_power'] = ''
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'options.json'
+            for previous in ('', None, 'sensor.custom_tuv_power'):
+                if previous is None:
+                    old.pop('entity_tuv_power', None)
+                else:
+                    old['entity_tuv_power'] = previous
+                path.write_text(json.dumps(old), encoding='utf-8')
+                migrated = load_options(path)
+                entity = previous or 'sensor.vykon_tuv'
+                self.assertEqual(migrated['entity_tuv_power'], entity)
+                state = State(migrated)
+                poll_once(state, 'http://localhost', 'synthetic', fetch=lambda *_: [
+                    {'entity_id': entity, 'state': '1800',
+                     'attributes': {'unit_of_measurement': 'W'}}])
+                self.assertEqual(numeric(state.snapshot['values']['tuv_power'], 'power'), 1800)
+
     def test_manifest_default_options_match_runtime_validation(self):
         self.assertEqual(options()['display_interval'], 60)
         bad = options()
